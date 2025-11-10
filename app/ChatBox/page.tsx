@@ -14,7 +14,7 @@ export default function ChatBox() {
     setChatHistory((prev) => [...prev, { sender: 'user', text: userMessage }])
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/chat', {
+      const response = await fetch('https://back-3-yciv.onrender.com/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
