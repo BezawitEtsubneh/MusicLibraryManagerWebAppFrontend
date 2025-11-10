@@ -8,17 +8,19 @@ import Album from '../album/page';
 import Artist from "../artist/page";
 import Song from '../songs/page';
 import Dashboard from '../dashboard/page';
+import ChatBox from "../ChatBox/page";
 
 export const buttons = {
   artist: '/images/artist.png',
   album: '/images/album.png',
-  song: '/images/song.png'
+  song: '/images/song.png',
+  chat: '/images/chat.png' // new chat icon (you can add this image)
 };
 
 export default function Home() {
   const { user, logout } = useAuth();
   const router = useRouter();
-  const [activeView, setActiveView] = useState<'dashboard' | 'artist' | 'album' | 'songs'>('dashboard');
+  const [activeView, setActiveView] = useState<'dashboard' | 'artist' | 'album' | 'songs' | 'chat'>('dashboard');
 
   useEffect(() => {
     if (!user) router.push('/login');
@@ -29,6 +31,7 @@ export default function Home() {
       case 'artist': return <Artist />;
       case 'album': return <Album />;
       case 'songs': return <Song />;
+      case 'chat': return <ChatBox />;
       default: return <Dashboard />;
     }
   };
@@ -55,7 +58,7 @@ export default function Home() {
 
       {/* Buttons Section */}
       {activeView === 'dashboard' && (
-        <div className='flex mt-10 justify-center gap-6'>
+        <div className='flex mt-10 justify-center gap-6 flex-wrap'>
           {Object.entries(buttons).map(([key, src]) => (
             <button
               key={key}

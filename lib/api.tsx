@@ -44,21 +44,23 @@ export const signup = async (data: SignupData): Promise<User> => {
 };
 
 // Login
+// Login
 export const login = async (username: string, password: string): Promise<Token> => {
   const params = new URLSearchParams();
   params.append("username", username);
   params.append("password", password);
 
-  const res = await fetch(`/auth/login`, {
+  const res = await fetch(`/auth/token`, {   // 👈 FIXED: was /auth/login
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: params.toString(),
-    credentials: "include", // uses cookies
+    credentials: "include",
   });
 
   if (!res.ok) throw new Error(await res.text());
   return await res.json();
 };
+
 
 // Logout
 export const logout = async (): Promise<void> => {
