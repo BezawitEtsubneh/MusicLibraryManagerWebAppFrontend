@@ -1,9 +1,9 @@
 import axios from "axios";
 
-const BASE_URL = "/api/artists"; // Proxied through Next route handler to https://back-3-yciv.onrender.com
+const BASE_URL = "/api/artists"; // Proxied through Next route handler to your backend
 
 export const artistAPI = {
-  // Get all artists
+  // Fetch all artists
   getAll: async () => {
     try {
       const res = await axios.get(`${BASE_URL}/all`, { withCredentials: true });
@@ -16,9 +16,14 @@ export const artistAPI = {
     }
   },
 
-  // Create artist (FormData)
-  create: async (formData: FormData) => {
+  // Create a new artist
+  create: async (artist: { Artist_name: string; Country: string; youtube_url?: string }) => {
     try {
+      const formData = new FormData();
+      formData.append("Artist_name", artist.Artist_name);
+      formData.append("Country", artist.Country);
+      if (artist.youtube_url) formData.append("youtube_url", artist.youtube_url);
+
       const res = await axios.post(`${BASE_URL}/create`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
         withCredentials: true,
@@ -30,9 +35,17 @@ export const artistAPI = {
     }
   },
 
-  // Update artist (FormData)
-  update: async (Artist_id: number, formData: FormData) => {
+  // Update existing artist
+  update: async (
+    Artist_id: number,
+    artist: { Artist_name: string; Country: string; youtube_url?: string }
+  ) => {
     try {
+      const formData = new FormData();
+      formData.append("Artist_name", artist.Artist_name);
+      formData.append("Country", artist.Country);
+      if (artist.youtube_url) formData.append("youtube_url", artist.youtube_url);
+
       const res = await axios.put(`${BASE_URL}/${Artist_id}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
         withCredentials: true,

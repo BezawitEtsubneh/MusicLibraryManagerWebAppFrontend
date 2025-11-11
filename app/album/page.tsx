@@ -6,12 +6,12 @@ interface Album {
   Album_id: number;
   Album_title: string;
   Total_tracks: number;
-  audio_url?: string;
-}
-interface AlbumProps {
-  token?: string
+  youtube_url?: string;
 }
 
+interface AlbumProps {
+  token?: string;
+}
 
 export default function Album({ token }: AlbumProps) {
   const [showCard, setShowCard] = useState(false);
@@ -21,7 +21,8 @@ export default function Album({ token }: AlbumProps) {
 
   const [title, setTitle] = useState("");
   const [tracks, setTracks] = useState(1);
-  const [audioFile, setAudioFile] = useState<File | null>(null);
+  const [youtubeUrl, setYoutubeUrl] = useState("");
+
   const [uploading, setUploading] = useState(false);
 
   const fetchAlbums = useCallback(async () => {
@@ -57,7 +58,7 @@ export default function Album({ token }: AlbumProps) {
     setEditingAlbum(null);
     setTitle("");
     setTracks(1);
-    setAudioFile(null);
+    setYoutubeUrl("");
     setShowCard(true);
   };
 
@@ -65,6 +66,7 @@ export default function Album({ token }: AlbumProps) {
     setEditingAlbum(album);
     setTitle(album.Album_title);
     setTracks(album.Total_tracks);
+    setYoutubeUrl(album.youtube_url || "");
     setShowCard(true);
   };
 
@@ -87,14 +89,14 @@ export default function Album({ token }: AlbumProps) {
         await albumAPI.update(editingAlbum.Album_id, {
           Album_title: title,
           Total_tracks: tracks,
-          audioFile: audioFile ?? undefined,
+          youtube_url: youtubeUrl,
         });
         alert("Album updated successfully");
       } else {
         await albumAPI.create({
           Album_title: title,
           Total_tracks: tracks,
-          audioFile: audioFile ?? undefined,
+          youtube_url: youtubeUrl,
         });
         alert("Album created successfully");
       }
@@ -103,7 +105,7 @@ export default function Album({ token }: AlbumProps) {
       handleCloseCard();
     } catch (err) {
       console.error(err);
-      alert("Failed to create album");
+      alert("Failed to create or update album");
     } finally {
       setUploading(false);
     }
@@ -113,7 +115,7 @@ export default function Album({ token }: AlbumProps) {
     <div className="p-4">
       {showCard ? (
         <div className="max-w-lg mx-auto bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
-          <div className="bg-amber-500 px-8 py-6 flex items-center justify-between">
+          <div className="bg-[#6F4E37] px-8 py-6 flex items-center justify-between">
             <h2 className="text-2xl font-bold text-white">
               {editingAlbum ? "Edit Album" : "New Album"}
             </h2>
@@ -132,35 +134,28 @@ export default function Album({ token }: AlbumProps) {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 className="w-full border p-2 rounded"
+                required
               />
             </div>
             <div className="mb-3">
               <label className="block font-medium">Total Tracks</label>
               <input
                 type="number"
-                value={isNaN(tracks) ? '' : tracks}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  if (value === '') {
-                    setTracks(1);
-                  } else {
-                    const numValue = parseInt(value, 10);
-                    setTracks(isNaN(numValue) ? 1 : numValue);
-                  }
-                }}
-                min="1"
+                value={tracks}
+                onChange={(e) => setTracks(Number(e.target.value))}
+                min={1}
                 className="w-full border p-2 rounded"
+                required
               />
             </div>
             <div className="mb-3">
-              <label className="block font-medium">Audio File</label>
+              <label className="block font-medium">YouTube URL</label>
               <input
-                type="file"
-                accept="audio/*"
-                onChange={(e) =>
-                  setAudioFile(e.target.files ? e.target.files[0] : null)
-                }
-                className="w-full"
+                type="url"
+                placeholder="https://youtu.be/..."
+                value={youtubeUrl}
+                onChange={(e) => setYoutubeUrl(e.target.value)}
+                className="w-full border p-2 rounded"
               />
             </div>
             <button
@@ -168,7 +163,11 @@ export default function Album({ token }: AlbumProps) {
               disabled={uploading}
               className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
             >
-              {uploading ? "Uploading..." : editingAlbum ? "Update Album" : "Create Album"}
+              {uploading
+                ? "Saving..."
+                : editingAlbum
+                ? "Update Album"
+                : "Create Album"}
             </button>
           </form>
         </div>
@@ -178,7 +177,7 @@ export default function Album({ token }: AlbumProps) {
             <h1 className="text-2xl font-bold">Albums</h1>
             <button
               onClick={handleAddClick}
-              className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+              className="bg-[#6F4E37] text-white px-3 py-1 rounded hover:bg-[#5a3e2e]"
             >
               + Add Album
             </button>
@@ -191,14 +190,23 @@ export default function Album({ token }: AlbumProps) {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {albums.map((album) => (
-                <div key={album.Album_id} className="border p-4 rounded shadow bg-white">
-                  <h3 className="text-lg font-semibold">{album.Album_title}</h3>
+                <div
+                  key={album.Album_id}
+                  className="border p-4 rounded shadow bg-white"
+                >
+                  <h3 className="text-lg font-semibold">
+                    {album.Album_title}
+                  </h3>
                   <p className="text-gray-600">Tracks: {album.Total_tracks}</p>
-                  {album.audio_url && (
-                    <audio controls className="w-full mt-2">
-                      <source src={`/api${album.audio_url}`} />
-                      Your browser does not support the audio element.
-                    </audio>
+                  {album.youtube_url && (
+                    <a
+                      href={album.youtube_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block mt-2 text-blue-500 underline text-sm"
+                    >
+                      Watch on YouTube
+                    </a>
                   )}
                   <div className="mt-2 flex gap-2">
                     <button

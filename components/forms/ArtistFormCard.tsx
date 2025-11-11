@@ -3,137 +3,121 @@ import React, { useState, useEffect } from "react";
 import { artistAPI } from "@/lib/artistapi";
 
 interface Artist {
-  Artist_id: number;
-  Artist_name: string;
-  Country: string;
-  audio_url?: string;
+    Artist_id: number;
+    Artist_name: string;
+    Country: string;
+    youtube_url?: string;
 }
 
-interface ArtistCardProps {
-  onClose: () => void;
-  editingArtist?: Artist | null;
-  onSuccess: () => void;
+interface ArtistFormCardProps {
+    onClose: () => void;
+    editingArtist?: Artist | null;
+    onSuccess?: () => void;
 }
 
-export default function ArtistCard({ onClose, editingArtist, onSuccess }: ArtistCardProps) {
-  const [artistName, setArtistName] = useState("");
-  const [country, setCountry] = useState("");
-  const [audioFile, setAudioFile] = useState<File | null>(null);
+export default function ArtistFormCard({ onClose, editingArtist, onSuccess }: ArtistFormCardProps) {
+    const [artistName, setArtistName] = useState("");
+    const [country, setCountry] = useState("");
+    const [youtubeURL, setYoutubeURL] = useState("");
+    const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    if (editingArtist) {
-      setArtistName(editingArtist.Artist_name);
-      setCountry(editingArtist.Country);
-    } else {
-      setArtistName("");
-      setCountry("");
-      setAudioFile(null);
-    }
-  }, [editingArtist]);
+    useEffect(() => {
+        if (editingArtist) {
+            setArtistName(editingArtist.Artist_name);
+            setCountry(editingArtist.Country);
+            setYoutubeURL(editingArtist.youtube_url || "");
+        } else {
+            setArtistName("");
+            setCountry("");
+            setYoutubeURL("");
+        }
+    }, [editingArtist]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setAudioFile(e.target.files[0]);
-    }
-  };
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!artistName || !country) {
+            alert("Please fill all required fields");
+            return;
+        }
 
-  const removeFile = () => setAudioFile(null);
+        const payload = {
+            Artist_name: artistName,
+            Country: country,
+            youtube_url: youtubeURL || undefined,
+        };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!artistName || !country) {
-      alert("Please fill in all fields.");
-      return;
-    }
+        try {
+            setSaving(true);
+            if (editingArtist) {
+                await artistAPI.update(editingArtist.Artist_id, payload);
+                alert("Artist updated successfully!");
+            } else {
+                await artistAPI.create(payload);
+                alert("Artist created successfully!");
+            }
 
-    const formData = new FormData();
-    formData.append("Artist_name", artistName);
-    formData.append("Country", country);
-    if (audioFile) formData.append("audio", audioFile);
+            if (onSuccess) onSuccess();
+            else onClose();
+        } catch (error) {
+            console.error("Error saving artist:", error);
+            alert(`Failed to ${editingArtist ? "update" : "create"} artist`);
+        } finally {
+            setSaving(false);
+        }
+    };
 
-    try {
-      if (editingArtist) {
-        await artistAPI.update(editingArtist.Artist_id, formData);
-        alert("Artist updated successfully!");
-      } else {
-        await artistAPI.create(formData);
-        alert("Artist added successfully!");
-      }
-      onSuccess();
-    } catch (error) {
-      console.error("Error saving artist:", error);
-      alert("Failed to save artist.");
-    }
-  };
+    return (
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            <div>
+                <label className="block mb-2 font-medium">Artist Name *</label>
+                <input
+                    type="text"
+                    value={artistName}
+                    onChange={(e) => setArtistName(e.target.value)}
+                    required
+                    className="w-full p-2 border rounded"
+                    placeholder="Enter artist name"
+                />
+            </div>
+            <div>
+                <label className="block mb-2 font-medium">Country *</label>
+                <input
+                    type="text"
+                    value={country}
+                    onChange={(e) => setCountry(e.target.value)}
+                    required
+                    className="w-full p-2 border rounded"
+                    placeholder="Enter country"
+                />
+            </div>
+            <div>
+                <label className="block mb-2 font-medium">YouTube URL</label>
+                <input
+                    type="url"
+                    value={youtubeURL}
+                    onChange={(e) => setYoutubeURL(e.target.value)}
+                    className="w-full p-2 border rounded"
+                    placeholder="Enter YouTube URL (optional)"
+                />
+            </div>
 
-  return (
-    <form onSubmit={handleSubmit} className="p-6 space-y-4 max-w-md">
-      <h2 className="text-xl font-bold">{editingArtist ? "Edit Artist" : "Add Artist"}</h2>
-
-      {/* Artist Name */}
-      <div>
-        <label className="block mb-2">Artist Name</label>
-        <input
-          type="text"
-          value={artistName}
-          onChange={(e) => setArtistName(e.target.value)}
-          className="w-full p-2 border rounded"
-          required
-        />
-      </div>
-
-      {/* Country */}
-      <div>
-        <label className="block mb-2">Country</label>
-        <input
-          type="text"
-          value={country}
-          onChange={(e) => setCountry(e.target.value)}
-          className="w-full p-2 border rounded"
-          required
-        />
-      </div>
-
-      {/* Audio Upload */}
-      <div>
-        <label className="block mb-2">Artist Audio</label>
-        <input
-          type="file"
-          accept="audio/*"
-          onChange={handleFileChange}
-          className="w-full"
-        />
-        <p className="text-sm text-gray-600">
-          {audioFile ? "Audio file selected" : "Upload an audio file"}
-        </p>
-      </div>
-
-      {/* Show selected file */}
-      {audioFile && (
-        <div className="flex justify-between items-center bg-gray-100 p-2 rounded">
-          <span className="text-sm">{audioFile.name}</span>
-          <button type="button" onClick={removeFile} className="text-red-500 text-lg">
-            ×
-          </button>
-        </div>
-      )}
-
-      {/* Buttons */}
-      <div className="flex gap-2 mt-4">
-        <button
-          type="button"
-          onClick={onClose}
-          className="flex-1 p-2 border rounded hover:bg-gray-100"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          className="flex-1 p-2 bg-amber-500 text-white rounded hover:bg-amber-600"
-        >
-          {editingArtist ? "Update" : "Add"}
-        </button>
-      </div>
-    </form>
-  );
+            <div className="flex gap-2 pt-2">
+                <button
+                    type="button"
+                    onClick={onClose}
+                    disabled={saving}
+                    className="flex-1 p-2 border rounded hover:bg-gray-100 disabled:opacity-50"
+                >
+                    Cancel
+                </button>
+                <button
+                    type="submit"
+                    disabled={saving || !artistName || !country}
+                    className="flex-1 p-2 bg-amber-500 text-white rounded hover:bg-amber-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                >
+                    {saving ? "Saving..." : editingArtist ? "Update Artist" : "Create Artist"}
+                </button>
+            </div>
+        </form>
+    );
 }

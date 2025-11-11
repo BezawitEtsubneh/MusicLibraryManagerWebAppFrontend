@@ -14,7 +14,7 @@ export const buttons = {
   artist: '/images/artist.png',
   album: '/images/album.png',
   song: '/images/song.png',
-  chat: '/images/chat.png' // new chat icon (you can add this image)
+  chat: '/images/chat.jpg' // new chat icon (you can add this image)
 };
 
 export default function Home() {
