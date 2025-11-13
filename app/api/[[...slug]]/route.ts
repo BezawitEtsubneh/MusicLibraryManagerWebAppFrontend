@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-const BACKEND_URL='https://back-3-yciv.onrender.com';
+const BACKEND_URL='http://127.0.0.1:8000';
 
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ slug?: string[] }> }) {

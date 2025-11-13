@@ -30,7 +30,7 @@ export default function Home() {
     switch (activeView) {
       case 'artist': return <Artist />;
       case 'album': return <Album />;
-      case 'songs': return <Song />;
+      case 'song': return <Song />;
       case 'chat': return <ChatBox />;
       default: return <Dashboard />;
     }
