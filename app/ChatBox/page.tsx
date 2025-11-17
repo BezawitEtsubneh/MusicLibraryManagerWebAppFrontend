@@ -16,7 +16,7 @@ export default function ChatBox() {
     setChatHistory((prev) => [...prev, { sender: 'user', text: userMessage }])
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/chatbot/', {
+      const response = await fetch('https://musiclibrarymanagerwebappbackend-2.onrender.com/chatbot/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

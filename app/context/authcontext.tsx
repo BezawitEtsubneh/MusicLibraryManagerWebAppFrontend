@@ -13,7 +13,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 // Backend URL
-const BASE_URL = "http://localhost:8000"
+const BASE_URL = "https://musiclibrarymanagerwebappbackend-2.onrender.com"
 
 // Set up Axios defaults immediately
 axios.defaults.baseURL = BASE_URL

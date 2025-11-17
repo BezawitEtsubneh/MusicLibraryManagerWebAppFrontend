@@ -31,7 +31,7 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const res = await fetch("http://127.0.0.1:8000/dashboard/", { credentials: 'include' });
+        const res = await fetch("https://musiclibrarymanagerwebappbackend-2.onrender.com/dashboard/", { credentials: 'include' });
         if (!res.ok) throw new Error('Failed to fetch dashboard');
         const data = await res.json();
         setDashboard(data);

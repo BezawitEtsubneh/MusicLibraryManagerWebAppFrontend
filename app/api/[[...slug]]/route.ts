@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-const BACKEND_URL='http://127.0.0.1:8000';
+const BACKEND_URL='https://musiclibrarymanagerwebappbackend-2.onrender.com';
 
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ slug?: string[] }> }) {
