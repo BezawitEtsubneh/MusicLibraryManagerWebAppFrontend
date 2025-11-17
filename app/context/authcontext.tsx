@@ -1,4 +1,5 @@
 'use client'
+
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react'
 import axios from 'axios'
 
@@ -11,7 +12,13 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-// Configure axios to include token in requests
+// Backend URL
+const BASE_URL = "http://localhost:8000"
+
+// Set up Axios defaults immediately
+axios.defaults.baseURL = BASE_URL
+axios.defaults.withCredentials = true
+
 const setupAxiosInterceptors = (token: string | null) => {
   if (token) {
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
@@ -24,63 +31,58 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<any>(null)
   const [token, setToken] = useState<string | null>(null)
 
-  // Load token from localStorage on mount
   useEffect(() => {
     const savedToken = localStorage.getItem('auth_token')
     if (savedToken) {
       setToken(savedToken)
       setupAxiosInterceptors(savedToken)
-      // Try to fetch user with saved token
       fetchMeWithToken(savedToken)
+    } else {
+      fetchMe() // try fetching user from cookie only
     }
   }, [])
 
-  // fetch currently logged in user
-  const fetchMe = async () => {
-    const res = await axios.get("/auth/users/me", {
-      withCredentials: true, // important for cookie auth
-    })
-    return res.data
-  }
-
+  // Fetch user from backend using token (if available)
   const fetchMeWithToken = async (authToken: string) => {
     try {
-      const res = await axios.get("/auth/users/me", {
+      const res = await axios.get('/users/me', {
         headers: { Authorization: `Bearer ${authToken}` },
-        withCredentials: true,
       })
       setUser(res.data)
-    } catch (error: any) {
-      const status = error?.response?.status
-      if (status !== 401) {
-        console.error('Error loading user:', error)
-      }
+    } catch {
       setUser(null)
       localStorage.removeItem('auth_token')
       setToken(null)
     }
   }
 
+  // Fetch user from backend without token (cookie-based)
+  const fetchMe = async () => {
+    try {
+      const res = await axios.get('/users/me')
+      setUser(res.data)
+    } catch {
+      setUser(null)
+    }
+  }
+
+  // Login user and store token
   const loginUser = async (username: string, password: string) => {
     try {
       const response = await axios.post(
-        '/auth/token',
+        '/token', // full URL not needed; baseURL is set
         new URLSearchParams({ username, password }),
-        { withCredentials: true, headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+        { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
       )
-      
-      // Save token from response
+
       const authToken = response.data.access_token
       if (authToken) {
         localStorage.setItem('auth_token', authToken)
         setToken(authToken)
         setupAxiosInterceptors(authToken)
-        console.log('Login successful, token saved')
       }
-      
-      // Fetch user info
-      const me = await fetchMe()
-      setUser(me)
+
+      await fetchMeWithToken(authToken)
     } catch (error) {
       console.error('Login failed:', error)
       throw error
@@ -89,7 +91,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = async () => {
     try {
-      await axios.post('/auth/logout', {}, { withCredentials: true })
+      await axios.post('/logout')
     } catch (error) {
       console.error('Logout error:', error)
     } finally {

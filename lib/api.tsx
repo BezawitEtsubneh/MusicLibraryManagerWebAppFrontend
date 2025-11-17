@@ -1,6 +1,6 @@
 import Cookies from "js-cookie";
 
-const BASE_URL = "/api"; // Proxied via Next route handler to https://back-3-yciv.onrender.com
+const BASE_URL = "/auth"; // All auth routes start with /auth
 
 // ---------------- TYPES ----------------
 export interface SignupData {
@@ -11,6 +11,7 @@ export interface SignupData {
 }
 
 export interface User {
+  id?: number;
   username: string;
   email?: string;
   full_name?: string;
@@ -22,8 +23,6 @@ export interface Token {
   token_type: string;
 }
 
-// Other interfaces (Album, Song, Artist, DashboardData) remain unchanged
-
 // ---------------- AUTH ----------------
 
 // Signup
@@ -34,23 +33,23 @@ export const signup = async (data: SignupData): Promise<User> => {
   formData.append("password", data.password);
   if (data.full_name) formData.append("full_name", data.full_name);
 
-  const res = await fetch(`/auth/signup`, {
+  const res = await fetch(`${BASE_URL}/signup`, {
     method: "POST",
     body: formData,
-     credentials: "include",
+    credentials: "include",
   });
+
   if (!res.ok) throw new Error(await res.text());
   return await res.json();
 };
 
-// Login
-// Login
+// Login (OAuth2)
 export const login = async (username: string, password: string): Promise<Token> => {
   const params = new URLSearchParams();
   params.append("username", username);
   params.append("password", password);
 
-  const res = await fetch(`/auth/token`, {   // 👈 FIXED: was /auth/login
+  const res = await fetch(`${BASE_URL}/token`, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: params.toString(),
@@ -61,18 +60,21 @@ export const login = async (username: string, password: string): Promise<Token> 
   return await res.json();
 };
 
-
 // Logout
 export const logout = async (): Promise<void> => {
-  await fetch(`/auth/logout`, {
+  await fetch(`${BASE_URL}/logout`, {
     method: "POST",
     credentials: "include",
   });
 };
 
-// Get current user (no arguments needed)
+// Get current user
 export const getCurrentUser = async (): Promise<User> => {
-  const res = await fetch(`/auth/users/me`, { credentials: "include" });
+  const res = await fetch(`${BASE_URL}/users/me`, {
+    method: "GET",
+    credentials: "include",
+  });
+
   if (!res.ok) throw new Error(await res.text());
   return await res.json();
 };

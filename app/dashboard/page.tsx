@@ -2,30 +2,26 @@
 import { useEffect, useState } from 'react';
 
 interface Song {
-  id: number;
-  name: string;
-  genre?: string;
-  audio_url?: string;
+  Songs_id: number;
+  Songs_name: string;
+  Gener?: string;
 }
 
 interface Album {
-  id: number;
-  title: string;
-  total_tracks: number;
-  audio_url?: string;
+  Album_id: number;
+  Album_title: string;
+  Total_tracks: number;
 }
 
 interface Artist {
-  id: number;
-  name: string;
-  country?: string;
-  audio_url?: string;
+  Artist_id: number;
+  Artist_name: string;
+  Country?: string;
 }
 
 interface DashboardData {
   totals: { songs: number; albums: number; artists: number };
-  recently_added: { songs: Song[]; albums: Album[]; artists: Artist[] };
-  top_played: { songs: Song[]; albums: Album[]; artists: Artist[] };
+  latest: { songs: Song[]; albums: Album[]; artists: Artist[] };
 }
 
 export default function DashboardPage() {
@@ -35,19 +31,15 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const res = await fetch("/api/dashboard", {
-          credentials: 'include',
-        });
+        const res = await fetch("http://127.0.0.1:8000/dashboard/", { credentials: 'include' });
         if (!res.ok) throw new Error('Failed to fetch dashboard');
         const data = await res.json();
         setDashboard(data);
       } catch (err) {
         console.error('Error fetching dashboard:', err);
-        // Set default empty dashboard
         setDashboard({
           totals: { songs: 0, albums: 0, artists: 0 },
-          recently_added: { songs: [], albums: [], artists: [] },
-          top_played: { songs: [], albums: [], artists: [] },
+          latest: { songs: [], albums: [], artists: [] },
         });
       } finally {
         setLoading(false);
@@ -67,121 +59,62 @@ export default function DashboardPage() {
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <div className="bg-white shadow rounded p-4 text-center">
           <h2 className="text-lg font-semibold">Total Songs</h2>
-          <p className="text-2xl font-bold mt-2">{dashboard.totals?.songs || 0}</p>
+          <p className="text-2xl font-bold mt-2">{dashboard.totals.songs}</p>
         </div>
-        <div className="bg-white shadow rounded p-4 text-center">
+        {/* <div className="bg-white shadow rounded p-4 text-center">
           <h2 className="text-lg font-semibold">Total Albums</h2>
-          <p className="text-2xl font-bold mt-2">{dashboard.totals?.albums || 0}</p>
-        </div>
+          <p className="text-2xl font-bold mt-2">{dashboard.totals.albums}</p>
+        </div> */}
         <div className="bg-white shadow rounded p-4 text-center">
           <h2 className="text-lg font-semibold">Total Artists</h2>
-          <p className="text-2xl font-bold mt-2">{dashboard.totals?.artists || 0}</p>
+          <p className="text-2xl font-bold mt-2">{dashboard.totals.artists}</p>
         </div>
       </section>
 
-      {/* Recently Added */}
+      {/* Latest */}
       <section className="mb-8">
-        <h2 className="text-2xl font-semibold mb-4">Recently Added</h2>
+        <h2 className="text-2xl font-semibold mb-4">Latest</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Songs */}
           <div className="bg-white shadow rounded p-4">
             <h3 className="text-lg font-semibold mb-2">Songs</h3>
             <ul className="space-y-1">
-              {dashboard.recently_added?.songs?.length > 0 ? (
-                dashboard.recently_added.songs.map((song) => (
-                  <li key={song.id} className="border-b pb-1">
-                    {song.name} {song.genre && `(${song.genre})`}
+              {dashboard.latest.songs.length ? (
+                dashboard.latest.songs.map(song => (
+                  <li key={song.Songs_id} className="border-b pb-1">
+                    {song.Songs_name} {song.Gener && `(${song.Gener})`}
                   </li>
                 ))
-              ) : (
-                <li className="text-gray-500">No songs yet</li>
-              )}
+              ) : <li className="text-gray-500">No songs yet</li>}
             </ul>
           </div>
 
           {/* Albums */}
+{/*           
           <div className="bg-white shadow rounded p-4">
             <h3 className="text-lg font-semibold mb-2">Albums</h3>
             <ul className="space-y-1">
-              {dashboard.recently_added?.albums?.length > 0 ? (
-                dashboard.recently_added.albums.map((album) => (
-                  <li key={album.id} className="border-b pb-1">
-                    {album.title} ({album.total_tracks} tracks)
+              {dashboard.latest.albums.length ? (
+                dashboard.latest.albums.map(album => (
+                  <li key={album.Album_id} className="border-b pb-1">
+                    {album.Album_title} ({album.Total_tracks} tracks)
                   </li>
                 ))
-              ) : (
-                <li className="text-gray-500">No albums yet</li>
-              )}
+              ) : <li className="text-gray-500">No albums yet</li>}
             </ul>
-          </div>
+          </div> */}
 
           {/* Artists */}
           <div className="bg-white shadow rounded p-4">
             <h3 className="text-lg font-semibold mb-2">Artists</h3>
             <ul className="space-y-1">
-              {dashboard.recently_added?.artists?.length > 0 ? (
-                dashboard.recently_added.artists.map((artist) => (
-                  <li key={artist.id} className="border-b pb-1">
-                    {artist.name} {artist.country && `(${artist.country})`}
+              {dashboard.latest.artists.length ? (
+                dashboard.latest.artists.map(artist => (
+                  <li key={artist.Artist_id} className="border-b pb-1">
+                    {artist.Artist_name} {artist.Country && `(${artist.Country})`}
                   </li>
                 ))
-              ) : (
-                <li className="text-gray-500">No artists yet</li>
-              )}
-            </ul>
-          </div>
-        </div>
-      </section>
-
-      {/* Top Played */}
-      <section className="mb-8">
-        <h2 className="text-2xl font-semibold mb-4">Top Played</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Songs */}
-          <div className="bg-white shadow rounded p-4">
-            <h3 className="text-lg font-semibold mb-2">Songs</h3>
-            <ul className="space-y-1">
-              {dashboard.top_played?.songs?.length > 0 ? (
-                dashboard.top_played.songs.map((song) => (
-                  <li key={song.id} className="border-b pb-1">
-                    {song.name} {song.genre && `(${song.genre})`}
-                  </li>
-                ))
-              ) : (
-                <li className="text-gray-500">No songs yet</li>
-              )}
-            </ul>
-          </div>
-
-          {/* Albums */}
-          <div className="bg-white shadow rounded p-4">
-            <h3 className="text-lg font-semibold mb-2">Albums</h3>
-            <ul className="space-y-1">
-              {dashboard.top_played?.albums?.length > 0 ? (
-                dashboard.top_played.albums.map((album) => (
-                  <li key={album.id} className="border-b pb-1">
-                    {album.title} ({album.total_tracks} tracks)
-                  </li>
-                ))
-              ) : (
-                <li className="text-gray-500">No albums yet</li>
-              )}
-            </ul>
-          </div>
-
-          {/* Artists */}
-          <div className="bg-white shadow rounded p-4">
-            <h3 className="text-lg font-semibold mb-2">Artists</h3>
-            <ul className="space-y-1">
-              {dashboard.top_played?.artists?.length > 0 ? (
-                dashboard.top_played.artists.map((artist) => (
-                  <li key={artist.id} className="border-b pb-1">
-                    {artist.name} {artist.country && `(${artist.country})`}
-                  </li>
-                ))
-              ) : (
-                <li className="text-gray-500">No artists yet</li>
-              )}
+              ) : <li className="text-gray-500">No artists yet</li>}
             </ul>
           </div>
         </div>

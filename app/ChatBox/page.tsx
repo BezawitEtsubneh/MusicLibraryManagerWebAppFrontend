@@ -1,11 +1,13 @@
 'use client'
 
 import { useState } from 'react'
+import { useAuth } from '../context/authcontext' // adjust path if needed
 
 export default function ChatBox() {
   const [userMessage, setUserMessage] = useState('')
   const [chatHistory, setChatHistory] = useState<{ sender: string; text: string }[]>([])
   const [loading, setLoading] = useState(false)
+  const { token } = useAuth() // get JWT token
 
   const handleSend = async () => {
     if (!userMessage.trim()) return
@@ -14,21 +16,18 @@ export default function ChatBox() {
     setChatHistory((prev) => [...prev, { sender: 'user', text: userMessage }])
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/chat', {
+      const response = await fetch('http://127.0.0.1:8000/chatbot/', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user_message: userMessage,
-          history: chatHistory.map((msg) => ({
-            role: msg.sender,
-            content: msg.text,
-          })),
-        }),
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`, // <--- send token
+        },
+        body: JSON.stringify({ message: userMessage }),
       })
 
       const data = await response.json()
       if (response.ok) {
-        setChatHistory((prev) => [...prev, { sender: 'bot', text: data.bot_response }])
+        setChatHistory((prev) => [...prev, { sender: 'bot', text: data.reply }])
       } else {
         setChatHistory((prev) => [...prev, { sender: 'bot', text: `Error: ${data.detail}` }])
       }

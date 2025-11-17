@@ -1,7 +1,6 @@
 'use client'
 import React, { useState, useEffect } from "react";
 import ArtistCard from "@/components/forms/ArtistFormCard";
-import Searchbar from "@/components/ui/Searchbar";
 import { artistAPI } from "@/lib/artistapi";
 
 interface Artist {
@@ -10,9 +9,11 @@ interface Artist {
   Country: string;
   audio_url?: string;
 }
+
 interface ArtistProps {
-  token?: string
+  token?: string;
 }
+
 export default function Artist({ token }: ArtistProps) {
   const [showCard, setShowCard] = useState(false);
   const [artists, setArtists] = useState<Artist[]>([]);
@@ -69,15 +70,22 @@ export default function Artist({ token }: ArtistProps) {
   };
 
   return (
-    <div>
+    <div className="p-6 md:p-8 bg-gray-50 min-h-screen">
+      {/* ---------------------- FORM MODAL ---------------------- */}
       {showCard ? (
-        <div className="max-w-md mx-auto bg-white rounded-lg shadow-md border">
-          <div className="bg-amber-500 px-6 py-4 flex items-center justify-between">
-            <h2 className="text-xl font-bold text-white">
+        <div className="max-w-md mx-auto bg-white rounded-3xl shadow-2xl border border-gray-200 animate-fade-in p-1">
+          <div className="bg-[#6F4E37] px-6 py-4 flex items-center justify-between rounded-t-3xl">
+            <h2 className="text-xl font-bold text-white tracking-wide">
               {editingArtist ? "Edit Artist" : "Add Artist"}
             </h2>
-            <button onClick={handleCloseCard} className="text-white text-xl">×</button>
+            <button 
+              onClick={handleCloseCard} 
+              className="text-white text-2xl hover:scale-110 transition"
+            >
+              ×
+            </button>
           </div>
+
           <ArtistCard
             onClose={handleCloseCard}
             editingArtist={editingArtist}
@@ -85,45 +93,58 @@ export default function Artist({ token }: ArtistProps) {
           />
         </div>
       ) : (
-        <div>
-          <div className="flex justify-between items-center mt-10 ml-4">
-            <Searchbar />
-            <button onClick={handleAddClick} className="w-9 h-9 bg-amber-500 text-white rounded">+</button>
+        <>
+          {/* ---------------------- ADD BUTTON ---------------------- */}
+          <div className="flex justify-end mt-6">
+            <button
+              onClick={handleAddClick}
+              className="w-12 h-12 bg-[#6F4E37] hover:bg-[#5a3f2d] text-white rounded-full flex items-center justify-center text-2xl shadow-md transition-transform hover:scale-110"
+            >
+              +
+            </button>
           </div>
 
-          <div className="mt-6 p-4">
+          {/* ---------------------- ARTIST CARDS ---------------------- */}
+          <div className="mt-10">
             {loading ? (
-              <p className="text-center">Loading artists...</p>
+              <p className="text-center text-gray-600">Loading artists...</p>
             ) : artists.length === 0 ? (
-              <p className="text-center text-gray-500 py-8">
-                No artists found. Click + to add an artist.
+              <p className="text-center text-gray-500 py-10 text-lg">
+                No artists found. Click <span className="font-semibold">+</span> to add one.
               </p>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {artists.map((artist) => (
-                  <div key={artist.Artist_id} className="border p-4 rounded shadow bg-white hover:shadow-lg transition-shadow">
-                    <h3 className="text-lg font-semibold mb-2">{artist.Artist_name}</h3>
-                    <p className="text-gray-600 mb-3">
-                      Country: <span className="font-medium">{artist.Country}</span>
-                    </p>
+                  <div
+                    key={artist.Artist_id}
+                    className="bg-white p-6 rounded-3xl shadow-lg hover:shadow-2xl transition-shadow transform hover:-translate-y-1 border border-gray-200"
+                  >
+                    {/* Artist Name */}
+                    <h3 className="text-xl font-bold text-gray-800 mb-2">
+                      {artist.Artist_name}
+                    </h3>
 
-                    {artist.audio_url && (
-                      <audio controls className="w-full mb-3">
+                    {/* Audio */}
+                    {artist.audio_url ? (
+                      <audio controls className="w-full mt-4 rounded-lg">
                         <source src={`/api${artist.audio_url}`} type="audio/mpeg" />
-                        Your browser does not support the audio element.
                       </audio>
+                    ) : (
+                      <p className="text-gray-500 text-sm mt-3">No song available</p>
                     )}
 
-                    <div className="mt-2 flex gap-2">
+                    {/* Buttons */}
+                    <div className="mt-4 flex gap-3">
                       <button
                         onClick={() => handleEditArtist(artist)}
-                        className="flex-1 bg-yellow-500 text-white px-3 py-1 rounded text-sm hover:bg-yellow-600 transition-colors"
+                        className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
                       >
                         Edit
                       </button>
+
                       <button
                         onClick={() => handleDeleteArtist(artist.Artist_id)}
-                        className="flex-1 bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition-colors"
+                        className="flex-1 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
                       >
                         Delete
                       </button>
@@ -134,15 +155,16 @@ export default function Artist({ token }: ArtistProps) {
             )}
           </div>
 
-          <div className="flex justify-end gap-4 mt-4 mr-4">
+          {/* ---------------------- FOOTER ---------------------- */}
+          <div className="flex justify-end mt-6">
             <button
               onClick={fetchArtists}
-              className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              className="px-5 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition"
             >
-              Refresh
+              Refresh List
             </button>
           </div>
-        </div>
+        </>
       )}
     </div>
   );

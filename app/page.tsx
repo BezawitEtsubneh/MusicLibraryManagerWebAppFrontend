@@ -1,7 +1,8 @@
 'use client'
+
 import React, { useState, useEffect } from "react";
-import Signup from "./signup/page";
-import Login from "./login/page";
+import SignupForm from "./signup/signupForm"; // ✅ Use form component
+import LoginForm from "./login/loginForm";     // ✅ Use form component
 import Home from "./home/page";
 import { getCurrentUser, User } from "../lib/api";
 
@@ -25,7 +26,7 @@ export default function App() {
     fetchUser();
   }, []);
 
-  // Handle login completion
+  // Handle login/signup completion
   const handleLogin = async () => {
     try {
       const u = await getCurrentUser();
@@ -47,7 +48,8 @@ export default function App() {
     <div className="min-h-screen flex flex-col items-center justify-center gap-4">
       {showSignup ? (
         <>
-          <Signup onSuccess={handleLogin} />
+          {/* ✅ Use SignupForm with onSuccess callback */}
+          <SignupForm onSuccess={handleLogin} />
           <button
             className="text-blue-500 underline"
             onClick={() => setShowSignup(false)}
@@ -57,7 +59,8 @@ export default function App() {
         </>
       ) : (
         <>
-          <Login onLogin={handleLogin} />
+          {/* ✅ Use LoginForm with onSuccess callback */}
+          <LoginForm onSuccess={handleLogin} />
           <button
             className="text-blue-500 underline"
             onClick={() => setShowSignup(true)}
